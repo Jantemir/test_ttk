@@ -6,6 +6,9 @@ docker run --rm -u "$(id -u):$(id -g)" -v $(pwd):/opt -w /opt laravelsail/php83-
 ```  
 
 Создать `.env` на основе `.env.example`.
+```shell
+cp .env.example .env
+```
 
 Запуск докера с помощью sail:
 ```shell  
