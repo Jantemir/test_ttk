@@ -1,0 +1,98 @@
+<script setup>
+import Checkbox from '@/Components/Checkbox.vue';
+import InputError from '@/Components/InputError.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import TextInput from '@/Components/TextInput.vue';
+import { useForm, usePage } from '@inertiajs/vue3';
+
+defineProps({
+    action: {
+        type: String,
+        default: 'create'
+    },
+    item: {
+        type: Object,
+    },
+    can: {
+        type: Object
+    }
+});
+
+const item = usePage().props.item;
+const isChange = usePage().props.action === 'change';
+
+const form = useForm({
+    name: item?.name,
+    description: item?.description,
+    active: item?.active == null ? true : Boolean(item?.active),
+    _method: isChange ? 'patch' : 'post',
+});
+</script>
+
+<template>
+    <section>
+        <header>
+            <h2 class="text-lg font-medium text-gray-900">Section information</h2>
+
+            <p class="mt-1 text-sm text-gray-600">
+                Fill all required fields to {{ isChange ? 'change the section\'s info' : 'create a new section' }}
+            </p>
+        </header>
+
+        <form @submit.prevent="isChange ? form.post(route('sections.update', item.id), [{'id': item.id}]) : form.post(route('sections.store'))" class="mt-6 space-y-6">
+            <input v-if="isChange" type="hidden" id="id" :value="item.id">
+            <div>
+                <InputLabel for="name" value="Name" />
+
+                <TextInput
+                    id="name"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.name"
+                    required
+                    autocomplete="name"
+                />
+
+                <InputError class="mt-2" :message="form.errors.name" />
+            </div>
+
+            <div>
+                <InputLabel for="description" value="Description" />
+
+                <TextInput
+                    id="Description"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.description"
+                    required
+                    autocomplete="description"
+                />
+
+                <InputError class="mt-2" :message="form.errors.description" />
+            </div>
+
+            <div v-if="can?.hide" class="block mt-4">
+                <label class="flex items-center">
+                    <Checkbox name="active" v-model:checked="form.active" />
+                    <span class="ms-2 text-sm text-gray-600">Active</span>
+                </label>
+                <InputError class="mt-2" :message="form.errors.active" />
+            </div>
+
+            <div class="flex items-center gap-4">
+                <PrimaryButton :disabled="form.processing">{{ isChange ? 'Submit' : 'Create' }}</PrimaryButton>
+
+                <Transition
+                    enter-active-class="transition ease-in-out"
+                    enter-from-class="opacity-0"
+                    leave-active-class="transition ease-in-out"
+                    leave-to-class="opacity-0"
+                >
+                    <p v-if="form.recentlySuccessful" class="text-sm text-gray-600">{{ isChange ? 'Changed' : 'Created' }}</p>
+                </Transition>
+            </div>
+
+        </form>
+    </section>
+</template>
